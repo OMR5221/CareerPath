@@ -68,4 +68,12 @@ public class QuestionDetailFragment extends Fragment
         });
         return v;
     }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+
+        Quiz.get(getActivity()).updateQuestion(mQuestion);
+    }
 }

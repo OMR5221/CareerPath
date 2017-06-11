@@ -16,8 +16,12 @@ public class Question
     public Question()
     {
         // Generate unique ID:
-        mId = UUID.randomUUID();
-        mScore = 0;
+        this(UUID.randomUUID());
+    }
+
+    public Question(UUID id)
+    {
+        mId = id;
     }
 
     public UUID getId() {
