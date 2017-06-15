@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.appsforprogress.android.careerpath.database.QuestionDBSchema.*;
+import static java.lang.Boolean.FALSE;
 
 /**
  * Created by ORamirez on 5/30/2017.
@@ -24,6 +25,7 @@ public class Quiz
     private static Quiz sQuiz;
     private Context mContext;
     private SQLiteDatabase mQuestionsDB;
+    private List<Question> mQuestions;
 
     private Quiz(Context context)
     {
@@ -31,6 +33,100 @@ public class Quiz
         // Use the SqLiteDBHelper to generate a DB
         mQuestionsDB = new CareerPathBaseHelper(mContext).getWritableDatabase();
         // Generate empty List of Questions to fill with data from DB:
+        mQuestions = new ArrayList<>();
+
+        for (int i = 0; i < 12; i++)
+        {
+            Question question = new Question();
+
+            if (i == 0)
+            {
+                question.setText("Build kitchen cabinets");
+                question.setCategory("REALISTIC");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 1)
+            {
+                question.setText("Guard money in an armored car");
+                question.setCategory("REALISTIC");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 2)
+            {
+                question.setText("Study space travel");
+                question.setCategory("INVESTIGATIVE");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 3)
+            {
+                question.setText("Map the bottom of the ocean");
+                question.setCategory("INVESTIGATIVE");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 4)
+            {
+                question.setText("Conduct a symphony orchestra");
+                question.setCategory("ARTISTIC");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 5)
+            {
+                question.setText("Write stories or articles for a magazine");
+                question.setCategory("ARTISTIC");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 6)
+            {
+                question.setText("Teach an exercise routine");
+                question.setCategory("SOCIAL");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 7)
+            {
+                question.setText("Perform nursing duties in a hospital");
+                question.setCategory("SOCIAL");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 8)
+            {
+                question.setText("Buy and sell stocks and bonds");
+                question.setCategory("ENTERPRISING");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 9)
+            {
+                question.setText("Manage a retail store");
+                question.setCategory("ENTERPRISING");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 10)
+            {
+                question.setText("Develop computer software");
+                question.setCategory("CONVENTIONAL");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+            else if (i == 11)
+            {
+                question.setText("Proofread records or forms");
+                question.setCategory("CONVENTIONAL");
+                question.setAnswered(FALSE);
+                question.setScore(0);
+            }
+
+            mQuestions.add(question);
+        }
+
 
     }
 
@@ -55,6 +151,7 @@ public class Quiz
         cvals.put(QuestionTable.Cols.TEXT, question.getText());
         cvals.put(QuestionTable.Cols.ANSWERED, question.getAnswered() ? 1:0);
         cvals.put(QuestionTable.Cols.SCORE, question.getScore());
+        cvals.put(QuestionTable.Cols.CATEGORY, question.getCategory());
 
         return cvals;
     }

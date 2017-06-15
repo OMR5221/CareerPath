@@ -13,7 +13,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
-    <string name="title_activity_quiz_detail">QuizDetailActivity</string>
+    <string name="title_activity_quiz_detail">Quiz Detail</string>
+    <string name="title_activity_quiz_list">Quiz List</string>
     <string name="action_settings">Settings</string>
     <string name="strongly_agree">Strongly Agree</string>
     <string name="agree">Agree</string>

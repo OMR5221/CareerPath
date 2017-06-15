@@ -11,7 +11,8 @@
     <TextView
         android:id="@+id/question_detail_text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:textSize="14dp"/>
 
     <RadioGroup
         android:id="@+id/question_answer_group"

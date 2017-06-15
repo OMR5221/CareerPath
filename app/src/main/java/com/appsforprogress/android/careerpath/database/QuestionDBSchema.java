@@ -18,6 +18,7 @@ public class QuestionDBSchema
             public static final String TEXT = "text";
             public static final String ANSWERED = "answered";
             public static final String SCORE = "score";
+            public static final String CATEGORY = "category";
         }
     }
 }

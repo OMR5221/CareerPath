@@ -6,28 +6,12 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 
 
-public class QuestionDetailActivity extends FragmentActivity
+public class QuestionDetailActivity extends SingleFragmentActivity
 {
 
-
     @Override
-    protected void onCreate(Bundle savedInstanceState)
+    protected Fragment createFragment()
     {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_question_detail);
-
-        // Get the Fragment Manager:
-        FragmentManager fm = getSupportFragmentManager();
-
-        // Give a fragment to Fragment Manager:
-        Fragment fragment = fm.findFragmentById(R.id.quiz_detail_container);
-
-        if (fragment == null)
-        {
-            fragment = new QuestionDetailFragment();
-            fm.beginTransaction()
-                    .add(R.id.question_detail_container, fragment)
-                    .commit();
-        }
+        return new QuestionDetailFragment();
     }
 }

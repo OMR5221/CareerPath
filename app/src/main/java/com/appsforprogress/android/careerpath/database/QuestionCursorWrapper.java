@@ -27,12 +27,14 @@ public class QuestionCursorWrapper extends CursorWrapper
         String text = getString(getColumnIndex(QuestionTable.Cols.TEXT));
         int answered = getInt(getColumnIndex(QuestionTable.Cols.ANSWERED));
         int score = getInt(getColumnIndex(QuestionTable.Cols.SCORE));
+        String category = getString(getColumnIndex(QuestionTable.Cols.CATEGORY));
 
         // Create question
         Question question = new Question(UUID.fromString(uuidString));
         question.setText(text);
         question.setAnswered(answered != 0);
         question.setScore(score);
+        question.setCategory(category);
 
         return question;
     }

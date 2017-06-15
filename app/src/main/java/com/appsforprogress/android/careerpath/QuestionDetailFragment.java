@@ -32,7 +32,8 @@ public class QuestionDetailFragment extends Fragment
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
 
         // Configure View for Fragment:
         View v = inflater.inflate(R.layout.fragment_question_detail, container, false);
@@ -42,6 +43,8 @@ public class QuestionDetailFragment extends Fragment
 
         // Set Question text in place:
         mQuestionText.setText(mQuestion.getText());
+
+        // mQuestionText.setEnabled(true);
 
         mAnswerRG = (RadioGroup) v.findViewById(R.id.question_answer_group);
 
@@ -66,6 +69,7 @@ public class QuestionDetailFragment extends Fragment
                 }
             }
         });
+
         return v;
     }
 
@@ -73,7 +77,6 @@ public class QuestionDetailFragment extends Fragment
     public void onPause()
     {
         super.onPause();
-
         Quiz.get(getActivity()).updateQuestion(mQuestion);
     }
 }

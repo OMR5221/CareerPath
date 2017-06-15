@@ -12,6 +12,7 @@ public class Question
     private String mText;
     private Integer mScore;
     private Boolean mAnswered;
+    private String mCategory;
 
     public Question()
     {
@@ -51,5 +52,13 @@ public class Question
 
     public void setAnswered(Boolean answered) {
         mAnswered = answered;
+    }
+
+    public String getCategory() {
+        return mCategory;
+    }
+
+    public void setCategory(String category) {
+        mCategory = category;
     }
 }
