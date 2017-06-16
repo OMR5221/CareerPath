@@ -6,8 +6,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+
+import java.util.UUID;
 
 /**
  * Created by ORamirez on 5/29/2017.
@@ -20,32 +23,34 @@ public class QuestionDetailFragment extends Fragment
     private TextView mQuestionText;
     private RadioGroup mAnswerRG;
 
-
     @Override
     // Configure Fragment:
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Pull Questions from DataBase:
-        mQuestion = new Question();
+        // Get Question ID from Intent in Activity:
+        UUID questionId = (UUID) getActivity()
+                .getIntent()
+                .getSerializableExtra(QuestionDetailActivity.EXTRA_QUESTION_ID);
+
+        // Use our Activity to communicate with the Quiz Object holding the Questions created from DB data
+        mQuestion = Quiz.get(getActivity()).getQuestion(questionId);
     }
 
-    @Nullable
     @Override
+    // Refreshes the Detail Fragment with the Question selected from Question Listing
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
     {
 
         // Configure View for Fragment:
         View v = inflater.inflate(R.layout.fragment_question_detail, container, false);
 
-        // Setup TextView:
+        // Setup TextView for Question text:
         mQuestionText = (TextView) v.findViewById(R.id.question_detail_text);
-
-        // Set Question text in place:
+        // Set Question Text data
         mQuestionText.setText(mQuestion.getText());
 
-        // mQuestionText.setEnabled(true);
-
+        // Get Radio Group for possible answers
         mAnswerRG = (RadioGroup) v.findViewById(R.id.question_answer_group);
 
         // Listen for Radio Button selection:

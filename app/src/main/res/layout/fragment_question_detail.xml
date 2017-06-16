@@ -12,7 +12,9 @@
         android:id="@+id/question_detail_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14dp"/>
+        android:textSize="18dp"
+        android:textStyle="bold"
+        android:padding="8dp"/>
 
     <RadioGroup
         android:id="@+id/question_answer_group"

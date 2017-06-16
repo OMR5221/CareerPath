@@ -32,7 +32,8 @@ public class CareerPathBaseHelper extends SQLiteOpenHelper
                         QuestionTable.Cols.UUID + ", " +
                         QuestionTable.Cols.TEXT + ", " +
                         QuestionTable.Cols.ANSWERED + ", " +
-                        QuestionTable.Cols.SCORE
+                        QuestionTable.Cols.SCORE + ", " +
+                        QuestionTable.Cols.CATEGORY
                     + ")"
         );
     }
