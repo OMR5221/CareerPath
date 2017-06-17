@@ -12,6 +12,9 @@ import android.widget.TextView;
 
 import java.util.UUID;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
 /**
  * Created by ORamirez on 5/29/2017.
  */
@@ -23,15 +26,31 @@ public class QuestionDetailFragment extends Fragment
     private TextView mQuestionText;
     private RadioGroup mAnswerRG;
 
+    // Hash of arguments to fragment:
+    private static final String ARG_QUESTION_ID = "question_id";
+
+
+    // Handles call from List to create a new Fragment Instance:
+    public static QuestionDetailFragment newInstance(UUID questionId)
+    {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_QUESTION_ID, questionId);
+
+        QuestionDetailFragment fragment = new QuestionDetailFragment();
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
+
     @Override
     // Configure Fragment:
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 
-        // Get Question ID from Intent in Activity:
-        UUID questionId = (UUID) getActivity()
-                .getIntent()
-                .getSerializableExtra(QuestionDetailActivity.EXTRA_QUESTION_ID);
+        // Get Question ID from Hash of arguments:
+        UUID questionId = (UUID) getArguments().getSerializable(ARG_QUESTION_ID);
 
         // Use our Activity to communicate with the Quiz Object holding the Questions created from DB data
         mQuestion = Quiz.get(getActivity()).getQuestion(questionId);
@@ -59,18 +78,32 @@ public class QuestionDetailFragment extends Fragment
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId)
             {
-                switch (checkedId)
-                {
+                // Logic when value changed:
+                switch (checkedId) {
                     case R.id.strongly_agree_button:
+                        mQuestion.setAnswered(TRUE);
                         mQuestion.setScore(5);
+                        break;
                     case R.id.agree_button:
+                        mQuestion.setAnswered(TRUE);
                         mQuestion.setScore(4);
+                        break;
                     case R.id.neutral_button:
+                        mQuestion.setAnswered(TRUE);
                         mQuestion.setScore(3);
+                        break;
                     case R.id.disagree_button:
+                        mQuestion.setAnswered(TRUE);
                         mQuestion.setScore(2);
+                        break;
                     case R.id.strongly_disagree_button:
+                        mQuestion.setAnswered(TRUE);
                         mQuestion.setScore(1);
+                        break;
+                    default:
+                        mQuestion.setAnswered(FALSE);
+                        mQuestion.setScore(0);
+                        break;
                 }
             }
         });
@@ -81,7 +114,9 @@ public class QuestionDetailFragment extends Fragment
     @Override
     public void onPause()
     {
+
         super.onPause();
         Quiz.get(getActivity()).updateQuestion(mQuestion);
     }
+
 }

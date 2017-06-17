@@ -12,9 +12,11 @@
         android:id="@+id/question_detail_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18dp"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:padding="8dp"/>
+        android:gravity="center"
+        android:paddingBottom="32dp"
+        android:paddingTop="24dp"/>
 
     <RadioGroup
         android:id="@+id/question_answer_group"
@@ -27,8 +29,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:padding="10dp"
-            android:textSize="15sp"
+            android:padding="12dp"
+            android:textSize="16sp"
             android:text="@string/strongly_agree"/>
         <RadioButton
             android:id="@+id/agree_button"
@@ -36,8 +38,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:padding="10dp"
-            android:textSize="15sp"
+            android:padding="12dp"
+            android:textSize="16sp"
             android:text="@string/agree"/>
         <RadioButton
             android:id="@+id/neutral_button"
@@ -45,8 +47,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:padding="10dp"
-            android:textSize="15sp"
+            android:padding="12dp"
+            android:textSize="16sp"
             android:text="@string/neutral"/>
         <RadioButton
             android:id="@+id/disagree_button"
@@ -54,8 +56,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:padding="10dp"
-            android:textSize="15sp"
+            android:padding="12dp"
+            android:textSize="16sp"
             android:text="@string/disagree"/>
         <RadioButton
             android:id="@+id/strongly_disagree_button"
@@ -63,8 +65,8 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            android:padding="10dp"
-            android:textSize="15sp"
+            android:padding="12dp"
+            android:textSize="16sp"
             android:text="@string/strongly_disagree"/>
 
     </RadioGroup>

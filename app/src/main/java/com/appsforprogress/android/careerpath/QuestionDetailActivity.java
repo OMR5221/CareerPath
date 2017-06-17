@@ -13,7 +13,7 @@ import java.util.UUID;
 public class QuestionDetailActivity extends SingleFragmentActivity
 {
 
-    public static final String EXTRA_QUESTION_ID = "com.appsforprogress.android.careerpath.question_id";
+    private static final String EXTRA_QUESTION_ID = "com.appsforprogress.android.careerpath.question_id";
 
     // Allows us to define the Intent sent to the DetailQuestionActivity:
     // Specifies the Question Id to be display in Detail View
@@ -25,8 +25,11 @@ public class QuestionDetailActivity extends SingleFragmentActivity
     }
 
     @Override
+    // Creates fragment when List item is selected:
     protected Fragment createFragment()
     {
-        return new QuestionDetailFragment();
+        UUID questionId = (UUID) getIntent().getSerializableExtra(EXTRA_QUESTION_ID);
+
+        return QuestionDetailFragment.newInstance(questionId);
     }
 }
