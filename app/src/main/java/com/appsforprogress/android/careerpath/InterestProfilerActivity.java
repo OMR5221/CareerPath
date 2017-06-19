@@ -11,6 +11,6 @@ public class InterestProfilerActivity  extends SingleFragmentActivity
     @Override
     protected Fragment createFragment()
     {
-        return new InterestProfilerFragment();
+        return InterestProfilerFragment.newInstance();
     }
 }
