@@ -1,5 +1,6 @@
 package com.appsforprogress.android.careerpath;
 
+import android.content.ContentValues;
 import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
@@ -26,7 +27,7 @@ import java.util.List;
  * Created by ORamirez on 6/17/2017.
  */
 
-public class IPFetcher
+public class QuestionFetcher
 {
     private static final String TAG = "IPFetcher";
 
@@ -122,6 +123,9 @@ public class IPFetcher
             Log.i(TAG,  "IO Except: ", ioe);
         }
 
+        // Insert items into DB:
+
+
         return items;
     }
 
@@ -155,6 +159,8 @@ public class IPFetcher
                     {
                         inDataItemTag = true;
                         question = new Question();
+                        question.setScore(0);
+                        question.setAnswered(false);
                         questionList.add(question);
                     }
                     break;

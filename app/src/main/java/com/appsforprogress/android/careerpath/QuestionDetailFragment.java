@@ -58,7 +58,7 @@ public class QuestionDetailFragment extends Fragment
 
     @Override
     // Refreshes the Detail Fragment with the Question selected from Question Listing
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
 
         // Configure View for Fragment:

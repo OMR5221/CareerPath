@@ -2,8 +2,8 @@ package com.appsforprogress.android.careerpath;
 
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,12 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static java.lang.Boolean.FALSE;
 
 /**
  * Created by ORamirez on 6/14/2017.
@@ -27,7 +23,7 @@ public class QuestionListFragment extends Fragment
 {
     private RecyclerView mQuestionListRecyclerView;
     private QuestionAdapter mQuestionAdapter;
-
+    private static final String TAG = "IPFragment";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -39,8 +35,15 @@ public class QuestionListFragment extends Fragment
         mQuestionListRecyclerView = (RecyclerView) view.findViewById(R.id.questionList_recyclerView);
         mQuestionListRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        // Connect Adapter to recyclerView
-        updateUI();
+        Quiz quiz = Quiz.get(getActivity());
+
+        Integer numQuestions = quiz.getCount();
+
+        if (numQuestions == 0) {
+            fillDB();
+        } else {
+            updateUI();
+        }
 
         return view;
     }
@@ -51,6 +54,7 @@ public class QuestionListFragment extends Fragment
         super.onResume();
         updateUI();
     }
+
 
     // Set up View Holder object which is controlled by the Adapter which then responds to the RecyclerView:
     private class QuestionHolder extends RecyclerView.ViewHolder implements View.OnClickListener
@@ -128,6 +132,11 @@ public class QuestionListFragment extends Fragment
         }
     }
 
+    private void fillDB()
+    {
+        new QuestionListFragment.FetchItemsTask().execute();
+    }
+
     private void updateUI()
     {
         // Get a Quiz instance if exists
@@ -135,18 +144,40 @@ public class QuestionListFragment extends Fragment
 
         List<Question> questions = quiz.getQuestions();
 
-        // Set up Question Adapter by supplying List of Question objects to manage:
         if (mQuestionAdapter == null)
         {
             mQuestionAdapter = new QuestionAdapter(questions);
             // Set RecyclerView to communicate with the Adapter
             mQuestionListRecyclerView.setAdapter(mQuestionAdapter);
-        }
-        else {
+
+        } else {
             // Update questions
             mQuestionAdapter.setQuestions(questions);
             mQuestionAdapter.notifyDataSetChanged();
         }
+    }
 
+    private class FetchItemsTask extends AsyncTask<Void, Void, List<Question>>
+    {
+        @Override
+        protected List<Question> doInBackground(Void... params)
+        {
+            return new QuestionFetcher().fetchItems();
+        }
+
+        // Runs on Main Thread: Safe place to update UI
+
+        @Override
+        protected void onPostExecute(List<Question> items)
+        {
+            Quiz quiz = Quiz.get(getActivity());
+
+            for (int i = 0; i < items.size(); i++)
+            {
+                quiz.addQuestion(items.get(i));
+            }
+
+            updateUI();
+        }
     }
 }

@@ -17,14 +17,12 @@ public class CareerPathBaseHelper extends SQLiteOpenHelper
 
     public CareerPathBaseHelper(Context context)
     {
-        super(context, DATABASE_NAME, null, VERSION);
+         super(context, DATABASE_NAME, null, VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-        // Code to create the initial DB:
-
         // Create Question Table:
         db.execSQL( "create table " + QuestionTable.NAME +
                     "(" +
