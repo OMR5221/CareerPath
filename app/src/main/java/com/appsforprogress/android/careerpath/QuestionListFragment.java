@@ -39,9 +39,11 @@ public class QuestionListFragment extends Fragment
 
         Integer numQuestions = quiz.getCount();
 
-        if (numQuestions == 0) {
+        if (numQuestions == 0)
+        {
             fillDB();
-        } else {
+        }
+        else {
             updateUI();
         }
 

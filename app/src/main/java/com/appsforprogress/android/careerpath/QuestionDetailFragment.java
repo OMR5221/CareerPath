@@ -2,14 +2,17 @@ package com.appsforprogress.android.careerpath;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 import static java.lang.Boolean.FALSE;
@@ -28,7 +31,7 @@ public class QuestionDetailFragment extends Fragment
 
     // Hash of arguments to fragment:
     private static final String ARG_QUESTION_ID = "question_id";
-
+    private HashMap scoreMap = new HashMap();
 
     // Handles call from List to create a new Fragment Instance:
     public static QuestionDetailFragment newInstance(UUID questionId)
@@ -45,7 +48,7 @@ public class QuestionDetailFragment extends Fragment
 
     @Override
     // Configure Fragment:
-    public void onCreate(@Nullable Bundle savedInstanceState)
+    public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
@@ -60,17 +63,28 @@ public class QuestionDetailFragment extends Fragment
     // Refreshes the Detail Fragment with the Question selected from Question Listing
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
-
         // Configure View for Fragment:
         View v = inflater.inflate(R.layout.fragment_question_detail, container, false);
 
         // Setup TextView for Question text:
         mQuestionText = (TextView) v.findViewById(R.id.question_detail_text);
+
         // Set Question Text data
         mQuestionText.setText(mQuestion.getText());
 
         // Get Radio Group for possible answers
         mAnswerRG = (RadioGroup) v.findViewById(R.id.question_answer_group);
+
+        // If the question has been answered show the Radio Selection Button as selected:
+        if (mQuestion.getAnswered())
+        {
+            Integer questionScore = mQuestion.getScore();
+
+            // Need a hash for score to index:
+            Integer sIndex = 5 - questionScore;
+
+            ((RadioButton) mAnswerRG.getChildAt(sIndex)).setChecked(true);
+        }
 
         // Listen for Radio Button selection:
         mAnswerRG.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener()
@@ -114,7 +128,6 @@ public class QuestionDetailFragment extends Fragment
     @Override
     public void onPause()
     {
-
         super.onPause();
         Quiz.get(getActivity()).updateQuestion(mQuestion);
     }
