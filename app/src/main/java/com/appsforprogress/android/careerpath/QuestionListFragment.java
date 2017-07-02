@@ -74,6 +74,8 @@ public class QuestionListFragment extends Fragment
 
             mQuestionTextView = (TextView) itemView.findViewById(R.id.list_item_question_text_view);
             mIsAnsweredCheckBox = (CheckBox) itemView.findViewById(R.id.list_item_isAnswered_checkBox);
+            mIsAnsweredCheckBox.setClickable(false);
+            // mIsAnsweredCheckBox.setEnabled(false);
 
         }
 
@@ -89,7 +91,7 @@ public class QuestionListFragment extends Fragment
         public void onClick(View v)
         {
             // Call the Detail Activities' Intent creation function:
-            Intent intent = QuestionDetailActivity.detailQuestionIntent(getActivity(), mQuestion.getId());
+            Intent intent = QuestionDetailPagerActivity.detailQuestionIntent(getActivity(), mQuestion.getId());
             startActivity(intent);
         }
     }

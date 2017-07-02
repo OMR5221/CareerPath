@@ -31,7 +31,6 @@ public class QuestionDetailFragment extends Fragment
 
     // Hash of arguments to fragment:
     private static final String ARG_QUESTION_ID = "question_id";
-    private HashMap scoreMap = new HashMap();
 
     // Handles call from List to create a new Fragment Instance:
     public static QuestionDetailFragment newInstance(UUID questionId)

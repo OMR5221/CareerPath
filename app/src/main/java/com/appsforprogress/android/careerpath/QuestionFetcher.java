@@ -80,10 +80,22 @@ public class QuestionFetcher
 
         try
         {
-            String webPage = "https://services.onetcenter.org/ws/mnm/interestprofiler/questions";
+            String webPage = "https://services.onetcenter.org/ws/mnm/interestprofiler/questions?start=1&end=60";
+
             /*
-            String name = "apps_for_progress";
-            String password = "2528txk";
+            -- Build specific webpage urls:
+            String url = Uri.parse(webPage).buildUpon()
+                    .appendQueryParameter("start", "1")
+                    .appendQueryParameter("end", "60")
+                    .build()
+                    .toString();
+
+            String xmlString = getUrlString(url);
+            */
+
+            /*
+            String name = "";
+            String password = "";
 
             String authString = name + ":" + password;
             System.out.println("auth string: " + authString);
