@@ -3,6 +3,7 @@ package com.appsforprogress.android.careerpath;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -28,6 +29,18 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.Profile;
+import com.facebook.ProfileTracker;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +50,8 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>
+{
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -55,6 +69,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private UserFBLoginTask mFBAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -62,8 +77,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
 
+
+    // For FaceBook Login:
+    private CallbackManager callbackManager;
+    private AccessTokenTracker accessTokenTracker;
+    private ProfileTracker profileTracker;
+    private LoginButton mFBLoginButton;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
@@ -92,6 +115,33 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        callbackManager = CallbackManager.Factory.create();
+
+        // Facebook Login button:
+        mFBLoginButton = (LoginButton) findViewById(R.id.fb_login_button);
+
+        mFBLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Profile profile = Profile.getCurrentProfile();
+                nextActivity(profile);
+            }
+            @Override
+            public void onCancel() {        }
+            @Override
+            public void onError(FacebookException e) {      }
+        });
+
+    }
+
+
+    protected void onActivityResult(int requestCode, int responseCode, Intent intent)
+    {
+        onActivityResult(requestCode, responseCode, intent);
+        //Facebook login
+        callbackManager.onActivityResult(requestCode, responseCode, intent);
+
     }
 
     private void populateAutoComplete() {
@@ -187,6 +237,25 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(true);
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
+        }
+    }
+
+
+    private void nextActivity(Profile profile)
+    {
+        if (profile != null)
+        {
+            String firstName =  profile.getFirstName();
+            String lastName =  profile.getLastName();
+            String profileImage = profile.getProfilePictureUri(200,200).toString();
+
+            Intent main = UserProfileActivity.launchFBProfile(LoginActivity.this, firstName, lastName, profileImage);
+
+            /*main.putExtra("name", profile.getFirstName());
+            main.putExtra("surname", profile.getLastName());
+            main.putExtra("imageUrl", profile.getProfilePictureUri(200,200).toString());
+            */
+            startActivity(main);
         }
     }
 
@@ -344,6 +413,129 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+    }
+
+
+    public class UserFBLoginTask extends AsyncTask<Void, Void, Boolean>
+    {
+
+
+        UserFBLoginTask() {}
+
+        // Facebook login button
+        private FacebookCallback<LoginResult> callback = new FacebookCallback<LoginResult>()
+        {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Profile profile = Profile.getCurrentProfile();
+                nextActivity(profile);
+            }
+            @Override
+            public void onCancel() {        }
+            @Override
+            public void onError(FacebookException e) {      }
+        };
+
+        private void nextActivity(Profile profile)
+        {
+            if(profile != null)
+            {
+                String firstName =  profile.getFirstName();
+                String lastName =  profile.getLastName();
+                String profileImage = profile.getProfilePictureUri(200,200).toString();
+
+                Intent userProfile = UserProfileActivity.launchFBProfile(LoginActivity.this, firstName, lastName, profileImage);
+
+                /*main.putExtra("name", profile.getFirstName());
+                main.putExtra("surname", profile.getLastName());
+                main.putExtra("imageUrl", profile.getProfilePictureUri(200,200).toString());
+                */
+
+                startActivity(userProfile);
+            }
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+
+            try
+            {
+                callbackManager = CallbackManager.Factory.create();
+                accessTokenTracker = new AccessTokenTracker()
+                {
+                    @Override
+                    protected void onCurrentAccessTokenChanged(AccessToken oldToken, AccessToken newToken) {}
+                };
+
+                profileTracker = new ProfileTracker()
+                {
+                    @Override
+                    protected void onCurrentProfileChanged(Profile oldProfile, Profile newProfile)
+                    {
+                        nextActivity(newProfile);
+                    }
+                };
+
+
+                accessTokenTracker.startTracking();
+                profileTracker.startTracking();
+
+
+                callback = new FacebookCallback<LoginResult>()
+                {
+                    @Override
+                    public void onSuccess(LoginResult loginResult)
+                    {
+                        AccessToken accessToken = loginResult.getAccessToken();
+                        Profile profile = Profile.getCurrentProfile();
+                        nextActivity(profile);
+                        Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onCancel() {}
+
+                    @Override
+                    public void onError(FacebookException e) {}
+                };
+
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+
+            // TODO: register the new account here.
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success)
+        {
+            mFBAuthTask = null;
+
+            if (success)
+            {
+                // loginButton.setReadPermissions("user_friends");
+                mFBLoginButton.registerCallback(callbackManager, callback);
+                //finish();
+            }
+        }
+
+        @Override
+        protected void onCancelled()
+        {
+            mFBAuthTask = null;
+        }
+
+        protected void onActivityResult(int requestCode, int responseCode, Intent intent)
+        {
+            onActivityResult(requestCode, responseCode, intent);
+            //Facebook login
+            callbackManager.onActivityResult(requestCode, responseCode, intent);
+
         }
     }
 }

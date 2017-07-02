@@ -16,6 +16,7 @@ public class UserDBSchema
             // Table Col Names:
             public static final String UUID = "user_id";
             public static final String PASSWORD = "password";
+            public static final String EMAIL = "email";
             public static final String FNAME = "first_name";
             public static final String LNAME = "last_name";
         }
