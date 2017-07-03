@@ -69,7 +69,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
-    private UserFBLoginTask mFBAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -94,10 +93,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         populateAutoComplete();
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        {
             @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent)
+            {
+                if (id == R.id.login || id == EditorInfo.IME_NULL)
+                {
                     attemptLogin();
                     return true;
                 }
@@ -106,7 +108,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         });
 
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        mEmailSignInButton.setOnClickListener(new OnClickListener()
+        {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -118,33 +121,75 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         callbackManager = CallbackManager.Factory.create();
 
-        // Facebook Login button:
-        mFBLoginButton = (LoginButton) findViewById(R.id.fb_login_button);
-
-        mFBLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+        accessTokenTracker = new AccessTokenTracker()
+        {
             @Override
-            public void onSuccess(LoginResult loginResult) {
+            protected void onCurrentAccessTokenChanged(AccessToken oldToken, AccessToken newToken) {}
+        };
+
+        profileTracker = new ProfileTracker()
+        {
+            @Override
+            protected void onCurrentProfileChanged(Profile oldProfile, Profile newProfile)
+            {
+                nextActivity(newProfile);
+            }
+        };
+
+
+        accessTokenTracker.startTracking();
+        profileTracker.startTracking();
+
+        // Facebook Login button:
+        LoginButton loginButton = (LoginButton) findViewById(R.id.fb_login_button);
+
+        callback = new FacebookCallback<LoginResult>()
+        {
+            @Override
+            public void onSuccess(LoginResult loginResult)
+            {
+                AccessToken accessToken = loginResult.getAccessToken();
                 Profile profile = Profile.getCurrentProfile();
                 nextActivity(profile);
+                Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
             }
+
             @Override
-            public void onCancel() {        }
+            public void onCancel() {}
+
             @Override
-            public void onError(FacebookException e) {      }
-        });
+            public void onError(FacebookException e) {}
+        };
+
+        // loginButton.setReadPermissions("user_friends");
+        loginButton.registerCallback(callbackManager, callback);
 
     }
+
+    // Facebook login button
+    private FacebookCallback<LoginResult> callback = new FacebookCallback<LoginResult>()
+    {
+        @Override
+        public void onSuccess(LoginResult loginResult) {
+            Profile profile = Profile.getCurrentProfile();
+            nextActivity(profile);
+        }
+        @Override
+        public void onCancel() {        }
+        @Override
+        public void onError(FacebookException e) {      }
+    };
 
 
     protected void onActivityResult(int requestCode, int responseCode, Intent intent)
     {
-        onActivityResult(requestCode, responseCode, intent);
+        super.onActivityResult(requestCode, responseCode, intent);
         //Facebook login
         callbackManager.onActivityResult(requestCode, responseCode, intent);
-
     }
 
-    private void populateAutoComplete() {
+    private void populateAutoComplete()
+    {
         if (!mayRequestContacts()) {
             return;
         }
@@ -152,7 +197,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         getLoaderManager().initLoader(0, null, this);
     }
 
-    private boolean mayRequestContacts() {
+    private boolean mayRequestContacts()
+    {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;
         }
@@ -179,7 +225,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+                                           @NonNull int[] grantResults)
+    {
         if (requestCode == REQUEST_READ_CONTACTS) {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 populateAutoComplete();
@@ -193,8 +240,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin() {
-        if (mAuthTask != null) {
+    private void attemptLogin()
+    {
+        if (mAuthTask != null)
+        {
             return;
         }
 
@@ -210,14 +259,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password))
+        {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
         }
 
         // Check for a valid email address.
-        if (TextUtils.isEmpty(email)) {
+        if (TextUtils.isEmpty(email))
+        {
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
@@ -227,7 +278,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             cancel = true;
         }
 
-        if (cancel) {
+        if (cancel)
+        {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
             focusView.requestFocus();
@@ -413,129 +465,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
-        }
-    }
-
-
-    public class UserFBLoginTask extends AsyncTask<Void, Void, Boolean>
-    {
-
-
-        UserFBLoginTask() {}
-
-        // Facebook login button
-        private FacebookCallback<LoginResult> callback = new FacebookCallback<LoginResult>()
-        {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                Profile profile = Profile.getCurrentProfile();
-                nextActivity(profile);
-            }
-            @Override
-            public void onCancel() {        }
-            @Override
-            public void onError(FacebookException e) {      }
-        };
-
-        private void nextActivity(Profile profile)
-        {
-            if(profile != null)
-            {
-                String firstName =  profile.getFirstName();
-                String lastName =  profile.getLastName();
-                String profileImage = profile.getProfilePictureUri(200,200).toString();
-
-                Intent userProfile = UserProfileActivity.launchFBProfile(LoginActivity.this, firstName, lastName, profileImage);
-
-                /*main.putExtra("name", profile.getFirstName());
-                main.putExtra("surname", profile.getLastName());
-                main.putExtra("imageUrl", profile.getProfilePictureUri(200,200).toString());
-                */
-
-                startActivity(userProfile);
-            }
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try
-            {
-                callbackManager = CallbackManager.Factory.create();
-                accessTokenTracker = new AccessTokenTracker()
-                {
-                    @Override
-                    protected void onCurrentAccessTokenChanged(AccessToken oldToken, AccessToken newToken) {}
-                };
-
-                profileTracker = new ProfileTracker()
-                {
-                    @Override
-                    protected void onCurrentProfileChanged(Profile oldProfile, Profile newProfile)
-                    {
-                        nextActivity(newProfile);
-                    }
-                };
-
-
-                accessTokenTracker.startTracking();
-                profileTracker.startTracking();
-
-
-                callback = new FacebookCallback<LoginResult>()
-                {
-                    @Override
-                    public void onSuccess(LoginResult loginResult)
-                    {
-                        AccessToken accessToken = loginResult.getAccessToken();
-                        Profile profile = Profile.getCurrentProfile();
-                        nextActivity(profile);
-                        Toast.makeText(getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onCancel() {}
-
-                    @Override
-                    public void onError(FacebookException e) {}
-                };
-
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success)
-        {
-            mFBAuthTask = null;
-
-            if (success)
-            {
-                // loginButton.setReadPermissions("user_friends");
-                mFBLoginButton.registerCallback(callbackManager, callback);
-                //finish();
-            }
-        }
-
-        @Override
-        protected void onCancelled()
-        {
-            mFBAuthTask = null;
-        }
-
-        protected void onActivityResult(int requestCode, int responseCode, Intent intent)
-        {
-            onActivityResult(requestCode, responseCode, intent);
-            //Facebook login
-            callbackManager.onActivityResult(requestCode, responseCode, intent);
-
         }
     }
 }

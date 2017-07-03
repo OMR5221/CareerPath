@@ -11,19 +11,19 @@
         android:orientation="vertical">
 
         <ImageView
-            android:layout_centerInParent="false"
             android:id="@+id/profileImage"
             android:background="@mipmap/ic_launcher"
             android:layout_width="80dp"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/profile_pic"/>
 
         <TextView
             android:id="@+id/fb_username"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dip"
-            android:text="Name"
-            android:textSize="30dp"/>
+            android:text="@string/name"
+            android:textSize="30sp"/>
 
     </LinearLayout>
 

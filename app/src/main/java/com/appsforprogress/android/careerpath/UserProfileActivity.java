@@ -6,10 +6,10 @@ import android.support.v4.app.Fragment;
 
 public class UserProfileActivity extends SingleFragmentActivity
 {
-    private static final String EXTRA_USER_ID = "com.appsforprogress.android.mycareerpath.user_id";
-    private static final String EXTRA_FIRST_NAME = "com.appsforprogress.android.mycareerpath.first_name";
-    private static final String EXTRA_LAST_NAME = "com.appsforprogress.android.mycareerpath.last_name";
-    private static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
+    public static final String EXTRA_USER_ID = "com.appsforprogress.android.mycareerpath.user_id";
+    public static final String EXTRA_FIRST_NAME = "com.appsforprogress.android.mycareerpath.first_name";
+    public static final String EXTRA_LAST_NAME = "com.appsforprogress.android.mycareerpath.last_name";
+    public static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
 
     public static Intent launchProfile(Context packageContext) //, UUID userId)
     {

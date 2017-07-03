@@ -28,5 +28,7 @@
     <string name="dislike">Dislike</string>
     <string name="unsure">Unsure</string>
     <string name="is_answered">Answered</string>
+    <string name="name">Name</string>
+    <string name="profile_pic">Profile Pic</string>
 
 </resources>
