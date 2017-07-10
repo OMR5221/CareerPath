@@ -4,22 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 
+import com.facebook.login.LoginResult;
+
 public class UserProfileActivity extends SingleFragmentActivity
 {
     public static final String EXTRA_USER_ID = "com.appsforprogress.android.mycareerpath.user_id";
     public static final String EXTRA_FIRST_NAME = "com.appsforprogress.android.mycareerpath.first_name";
     public static final String EXTRA_LAST_NAME = "com.appsforprogress.android.mycareerpath.last_name";
     public static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
+    public static final String EXTRA_LOGIN_RESULT = "com.appsforprogress.android.mycareerpath.login_result";
 
-    public static Intent launchProfile(Context packageContext) //, UUID userId)
-    {
-        Intent intent = new Intent(packageContext, UserProfileActivity.class);
-        //intent.putExtra(EXTRA_USER_ID, userId);
-        return intent;
-    }
-
-
-    public static Intent launchFBProfile(Context packageContext, String firstName, String lastName, String profileImg)
+    public static Intent newIntent(Context packageContext, String firstName, String lastName, String profileImg)
     {
         Intent userProfile = new Intent(packageContext, UserProfileActivity.class);
 
@@ -37,6 +32,6 @@ public class UserProfileActivity extends SingleFragmentActivity
 
         // UUID userId = (UUID) getIntent().getSerializableExtra(EXTRA_USER_ID);
 
-        return UserProfileFragment.newInstance(); //userId);
+        return new UserProfileFragment();
     }
 }

@@ -56,14 +56,23 @@ public class UserProfileFragment extends Fragment
     private FloatingActionButton postFab;
     private RecyclerView mFBLikeRecyclerView;
 
-    public static UserProfileFragment newInstance() //UUID userId)
+
+    public static final String EXTRA_USER_ID = "com.appsforprogress.android.mycareerpath.user_id";
+    public static final String EXTRA_FIRST_NAME = "com.appsforprogress.android.mycareerpath.first_name";
+    public static final String EXTRA_LAST_NAME = "com.appsforprogress.android.mycareerpath.last_name";
+    public static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
+    public static final String EXTRA_LOGIN_RESULT = "com.appsforprogress.android.mycareerpath.login_result";
+
+    public static UserProfileFragment newInstance(String firstName, String lastName, String profileImg)
     {
         Bundle args = new Bundle();
-        // args.putSerializable(ARG_USER_ID, userId);
+
+        args.putSerializable(EXTRA_FIRST_NAME, firstName);
+        args.putSerializable(EXTRA_LAST_NAME, lastName);
+        args.putSerializable(EXTRA_IMAGE_LINK, profileImg);
 
         UserProfileFragment fragment = new UserProfileFragment();
-        // fragment.setArguments(args);
-
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -97,7 +106,7 @@ public class UserProfileFragment extends Fragment
 
         mUserName = (TextView) view.findViewById(R.id.fb_username);
         mUserName.setText("" + mFirstName + " " + mLastName);
-        mUserName.setVisibility(View.INVISIBLE);
+        mUserName.setVisibility(View.VISIBLE);
 
         mProfilePicture = (ImageView) view.findViewById(R.id.profileImage);
         new DownloadImage(mProfilePicture).execute(mProfilePicURL);
@@ -161,57 +170,6 @@ public class UserProfileFragment extends Fragment
  * To get the Facebook page which is liked by user's through creating a new request.
  * When the request is completed, a callback is called to handle the success condition.
 */
-    protected List<FBLike> getLikedPageInfo(LoginResult loginResult)
-    {
-        final List<FBLike> fbLikes = new ArrayList<FBLike>();
-
-        // Create a FB Like Object to load likes into:
-        GraphRequest data_request = GraphRequest.newMeRequest(
-                loginResult.getAccessToken(),
-                new GraphRequest.GraphJSONObjectCallback()
-                {
-                    @Override
-                    public void onCompleted(JSONObject json_object, GraphResponse response)
-                    {
-
-                        try
-                        {
-                            // convert Json object into Json array
-                            JSONArray posts = json_object.getJSONObject("likes").optJSONArray("data");
-
-                            // LOOP through retrieved JSON posts:
-                            for (int i = 0; i < posts.length(); i++)
-                            {
-                                JSONObject post = posts.optJSONObject(i);
-                                String id = post.optString("id");
-                                String category = post.optString("category");
-                                String name = post.optString("name");
-                                int count = post.optInt("likes");
-                                // print id, page name and number of like of facebook page
-                                Log.e("id: ", id + " (name: " + name + " , category: "+ category + " likes count - " + count);
-
-                                FBLike fbLike = new FBLike();
-                                fbLike.setId(id);
-                                fbLike.setCategory(category);
-                                fbLike.setName(name);
-
-                                // Add each like to a List
-                                fbLikes.add(fbLike);
-
-                            }
-                        }
-                        catch(Exception e) {}
-                    }
-                });
-
-        Bundle permission_param = new Bundle();
-        // add the field to get the details of liked pages
-        permission_param.putString("fields", "likes{id,category,name,location,likes}");
-        data_request.setParameters(permission_param);
-        data_request.executeAsync();
-
-        return fbLikes;
-    }
 
     // Create object to hold each FBLike entry to be displayed in RecyclerView
     private class FBLikeHolder extends RecyclerView.ViewHolder
