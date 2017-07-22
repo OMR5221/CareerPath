@@ -3,25 +3,34 @@ package com.appsforprogress.android.careerpath;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -29,35 +38,47 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.share.Sharer;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static android.Manifest.permission.READ_CONTACTS;
+import static android.R.attr.id;
+import static android.content.ContentValues.TAG;
 import static com.facebook.FacebookSdk.getApplicationContext;
 
 /**
@@ -71,15 +92,29 @@ public class LoginFragment extends Fragment
     private View mProgressView;
     private View mLoginFormView;
     SharedPreferences pref;
+    private boolean mLoggedIn = false;
+
 
 
     // For FaceBook Login:
+    ViewSwitcher switcher;
     private CallbackManager callbackManager;
     private AccessTokenTracker accessTokenTracker;
     private ProfileTracker profileTracker;
     private LoginButton mFBLoginButton;
     private List<FBLike> fbLikes = new ArrayList<FBLike>();
-    private String facebook_id,f_name, m_name, l_name, gender, profile_image, full_name, email_id;
+    private String facebook_id, first_name, last_name, name, gender, profile_image, full_name, email, email_id, profile_pic;
+    private String profile_pic_url;
+
+    private Button fbButton;
+
+    // Facebook Login View:
+    private TextView mUserName;
+    private TextView mGender;
+    private TextView mLocation;
+    private ImageView mProfilePicture;
+    private FloatingActionButton postFab;
+    private RecyclerView mFBLikeRecyclerView;
 
     public static final String EXTRA_USER_ID = "com.appsforprogress.android.mycareerpath.user_id";
     public static final String EXTRA_FIRST_NAME = "com.appsforprogress.android.mycareerpath.first_name";
@@ -87,194 +122,213 @@ public class LoginFragment extends Fragment
     public static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
     public static final String EXTRA_LOGIN_RESULT = "com.appsforprogress.android.mycareerpath.login_result";
 
-    // Facebook login button
-    private FacebookCallback<LoginResult> callback = new FacebookCallback<LoginResult>()
-    {
-        @Override
-        public void onSuccess(LoginResult loginResult)
-        {
-            Profile profile = Profile.getCurrentProfile();
-            nextActivity(profile);
-        }
-        @Override
-        public void onCancel() {        }
-        @Override
-        public void onError(FacebookException e) {      }
-    };
+    private AccessToken accessToken;
+    PrefUtil prefUtil;
+
+
 
     public LoginFragment() {}
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-    {
-        View v = inflater.inflate(R.layout.fragment_login, container, false);
-
-        // Facebook Login button:
-        mFBLoginButton = (LoginButton) v.findViewById(R.id.fb_login_button);
-
-        // mFBLoginButton.setReadPermissions("email");
-        mFBLoginButton.setFragment(this);
-
-        callbackManager = CallbackManager.Factory.create();
-        mFBLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>()
-        {
-            @Override
-            public void onSuccess(LoginResult loginResult)
-            {
-                AccessToken accessToken = loginResult.getAccessToken();
-                Profile profile = Profile.getCurrentProfile();
-
-                if (profile != null)
-                {
-                    facebook_id = profile.getId();
-                    f_name = profile.getFirstName();
-                    m_name = profile.getMiddleName();
-                    l_name = profile.getLastName();
-                    full_name = profile.getName();
-                    profile_image = profile.getProfilePictureUri(400, 400).toString();
-                }
-
-                GraphRequest request = GraphRequest.newMeRequest(
-                                accessToken,
-                                new GraphRequest.GraphJSONObjectCallback()
-                                {
-                                    @Override
-                                    public void onCompleted(
-                                            final JSONObject object,
-                                            GraphResponse response)
-                                    {
-                                        // Application code
-                                        final JSONObject jsonObject = response.getJSONObject();
-                                        String name = "";
-                                        String email = "";
-                                        String id = "";
-                                        // convert Json object into Json array
-                                        JSONArray posts;
-
-                                        try
-                                        {
-                                            id = object.optString("id");
-                                            name = jsonObject.getString("name");
-                                            email =  jsonObject.getString("email");
-                                            email_id=object.getString("email");
-                                            gender=object.getString("gender");
-                                            String profile_name=object.getString("name");
-                                            long fb_id=object.getLong("id"); //use this for logout
-                                            posts = jsonObject.getJSONObject("likes").optJSONArray("data");
-
-                                            // LOOP through retrieved JSON posts:
-                                            for (int i = 0; i < posts.length(); i++)
-                                            {
-                                                JSONObject post = posts.optJSONObject(i);
-                                                String likeId = post.optString("id");
-                                                String likeCategory = post.optString("category");
-                                                String likeName = post.optString("name");
-                                                int likeCount = post.optInt("likes");
-
-                                                // print id, page name and number of like of facebook page
-                                                Log.e("id: ", likeId + " (name: " + likeName + " , category: "+ likeCategory + " likes count - " + likeCount);
-
-                                                // Create Like Objects
-                                                FBLike fbLike = new FBLike();
-                                                fbLike.setId(likeId);
-                                                fbLike.setCategory(likeCategory);
-                                                fbLike.setName(likeName);
-
-                                                // Add each like to a List
-                                                fbLikes.add(fbLike);
-                                            }
-
-                                            /*
-                                            Intent i = new Intent(getActivity(), UserProfileActivity.class);
-
-                                            i.putExtra("type","facebook");
-                                            i.putExtra("facebook_id",id);
-                                            i.putExtra("f_name",f_name);
-                                            i.putExtra("m_name",m_name);
-                                            i.putExtra("l_name",l_name);
-                                            i.putExtra("full_name",full_name);
-                                            i.putExtra("profile_image",profile_image);
-                                            i.putExtra("email_id",email_id);
-                                            i.putExtra("gender",gender);
-
-                                            Toast.makeText(getApplicationContext(), "Logged in...", Toast.LENGTH_SHORT).show();
-                                            */
-
-                                            Intent intent = UserProfileActivity.newIntent(getActivity(), f_name, l_name, profile_image);
-                                            startActivity(intent);
-
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                }
-                        );
-
-                /*
-                Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name,email, posts");
-                request.setParameters(parameters);
-                */
-                request.executeAsync();
-            }
-
-            @Override
-            public void onCancel() {}
-
-            @Override
-            public void onError(FacebookException e) {}
-        });
-        // loginButton.setVisibility(View.INVISIBLE);
-        return v;
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
 
-        callbackManager = CallbackManager.Factory.create();
+        // FacebookSdk.sdkInitialize(getActivity().getApplicationContext());
+        //callbackManager = CallbackManager.Factory.create();
+
 
         accessTokenTracker = new AccessTokenTracker()
         {
             @Override
-            protected void onCurrentAccessTokenChanged(AccessToken oldToken, AccessToken newToken) {}
+            protected void onCurrentAccessTokenChanged(AccessToken oldToken, AccessToken newToken)
+            {
+                accessToken = newToken;
+                refreshUI();
+            }
         };
-
 
         profileTracker = new ProfileTracker()
         {
             @Override
             protected void onCurrentProfileChanged(Profile oldProfile, Profile newProfile)
             {
-                nextActivity(newProfile);
+                if (newProfile != null)
+                {
+                    this.stopTracking();
+                    Profile.setCurrentProfile(newProfile);
+                    refreshUI();
+                }
             }
         };
 
-        accessTokenTracker.startTracking();
         profileTracker.startTracking();
+        accessTokenTracker.startTracking();
+
+        // prefUtil = new PrefUtil(this.getActivity());
+
     }
 
 
     @Override
-    public void onResume() {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        View view = inflater.inflate(R.layout.fragment_login, container, false);
+
+
+        mUserName = (TextView) view.findViewById(R.id.fb_username);
+        mUserName.setVisibility(View.INVISIBLE);
+        mProfilePicture = (ImageView) view.findViewById(R.id.profileImage);
+        mProfilePicture.setVisibility(View.INVISIBLE);
+
+        //mFBLikeRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_like_gallery_recycler_view);
+        // Set up row of 3 elements
+        //mFBLikeRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        //mFBLikeRecyclerView.setVisibility(View.INVISIBLE);
+
+
+        /*
+        // Initialize layout button
+        fbButton = (Button) view.findViewById(R.id.custom_login_button);
+
+        fbButton.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // Call private method
+                onFblogin();
+            }
+        });
+        */
+        mFBLoginButton = (LoginButton) view.findViewById(R.id.fb_login_button);
+        mFBLoginButton.setReadPermissions(Arrays.asList("public_profile", "email", "user_birthday", "user_friends", "user_likes"));
+
+        callbackManager = CallbackManager.Factory.create();
+        //mFBLoginButton.setFragment(this);
+        mFBLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>()
+        {
+            @Override
+            public void onSuccess(LoginResult loginResult)
+            {
+                Toast.makeText(getActivity().getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+                accessToken = loginResult.getAccessToken();
+                // refreshUI();
+                // String accessTokenStr = loginResult.getAccessToken().getToken();
+
+                // save accessToken to SharedPreference
+                //prefUtil.saveAccessToken(accessTokenStr);
+
+                // accessToken = loginResult.getAccessToken();
+                GraphRequest request = GraphRequest.newMeRequest(
+                        accessToken,
+                        new GraphRequest.GraphJSONObjectCallback()
+                        {
+                            @Override
+                            public void onCompleted(final JSONObject object, GraphResponse response)
+                            {
+                                // Application code
+                                final JSONObject jsonObject = response.getJSONObject();
+                                // convert Json object into Json array
+                                JSONArray posts;
+
+                                try
+                                {
+                                    facebook_id = object.optString("id");
+                                    name = jsonObject.getString("name");
+                                    //email =  jsonObject.getString("email");
+                                    ///email_id = object.getString("email");
+                                    // gender = object.getString("gender");
+                                    //long fb_id = object.getLong("id"); // use this for logout
+                                    //posts = jsonObject.getJSONObject("likes").optJSONArray("data");
+                                    profile_pic_url =  "https://graph.facebook.com/" + facebook_id + "/picture?type=large";
+
+                                    /* LOOP through retrieved JSON posts:
+                                    for (int i = 0; i < posts.length(); i++)
+                                    {
+                                        JSONObject post = posts.optJSONObject(i);
+                                        String likeId = post.optString("id");
+                                        String likeCategory = post.optString("category");
+                                        String likeName = post.optString("name");
+                                        int likeCount = post.optInt("likes");
+
+                                        // print id, page name and number of like of facebook page
+                                        Log.e("id: ", likeId + " (name: " + likeName + " , category: "+ likeCategory + " likes count - " + likeCount);
+
+                                        // Create Like Objects
+                                        FBLike fbLike = new FBLike();
+                                        fbLike.setId(likeId);
+                                        fbLike.setCategory(likeCategory);
+                                        fbLike.setName(likeName);
+
+                                        // Add each like to a List
+                                        fbLikes.add(fbLike);
+                                    }
+                                    */
+
+                                    refreshUI();
+
+                                } catch (JSONException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                );
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name, link"); //write the fields you need
+                request.setParameters(parameters);
+                request.executeAsync();
+            }
+
+            @Override
+            public void onCancel() {
+            }
+
+            @Override
+            public void onError(FacebookException e)
+            {
+                // deleteAccessToken();
+            }
+        });
+
+        return view;
+    }
+
+
+    @Override
+    public void onResume()
+    {
         super.onResume();
+        //deleteAccessToken();
+
     }
 
     @Override
-    public void onPause() {
+    public void onPause()
+    {
         super.onPause();
     }
 
     @Override
-    public void onStop() {
+    public void onStop()
+    {
         super.onStop();
 
         // Stop FB Login:
         accessTokenTracker.stopTracking();
         profileTracker.stopTracking();
     }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        accessTokenTracker.stopTracking();
+        profileTracker.stopTracking();
+    }
+
 
     public void onActivityResult(int requestCode, int responseCode, Intent intent)
     {
@@ -284,18 +338,177 @@ public class LoginFragment extends Fragment
     }
 
 
-    private void nextActivity(Profile profile)
+    // Private method to handle Facebook login and callback
+    private void onFblogin()
     {
-        if (profile != null)
-        {
-            String firstName = profile.getFirstName();
-            String lastName =  profile.getLastName();
-            String profileImage = profile.getProfilePictureUri(200,200).toString();
+        callbackManager = CallbackManager.Factory.create();
 
-            Intent intent = UserProfileActivity.newIntent(getActivity(), firstName, lastName, profileImage);
-            startActivity(intent);
-        }
+        // Set permissions
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("email","user_photos","public_profile"));
+
+        LoginManager.getInstance().registerCallback(callbackManager,
+                new FacebookCallback<LoginResult>() {
+                    @Override
+                    public void onSuccess(LoginResult loginResult) {
+
+                        System.out.println("Success");
+                        GraphRequest.newMeRequest(
+                                loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                                    @Override
+                                    public void onCompleted(JSONObject json, GraphResponse response) {
+                                        if (response.getError() != null) {
+                                            // handle error
+                                            System.out.println("ERROR");
+                                        } else {
+                                            System.out.println("Success");
+                                            try {
+
+                                                String jsonresult = String.valueOf(json);
+                                                System.out.println("JSON Result"+jsonresult);
+
+                                                String str_email = json.getString("email");
+                                                String str_id = json.getString("id");
+                                                String str_firstname = json.getString("first_name");
+                                                String str_lastname = json.getString("last_name");
+
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+
+                                }).executeAsync();
+
+                    }
+
+                    @Override
+                    public void onCancel() {
+                    }
+
+                    @Override
+                    public void onError(FacebookException error) {
+                    }
+                });
     }
+
+    private void refreshUI()
+    {
+        /*
+        if (accessToken != null)
+        {
+            GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback()
+                {
+                    @Override
+                    public void onCompleted(final JSONObject object, GraphResponse response)
+                    {
+                        // Application code
+                        final JSONObject jsonObject = response.getJSONObject();
+                        // convert Json object into Json array
+                        JSONArray posts;
+
+                        try
+                        {
+                            facebook_id = object.optString("id");
+                            name = jsonObject.getString("name");
+                            email =  jsonObject.getString("email");
+                            email_id = object.getString("email");
+                            gender = object.getString("gender");
+                            long fb_id = object.getLong("id"); // use this for logout
+                            posts = jsonObject.getJSONObject("likes").optJSONArray("data");
+                            profile_pic_url =  "https://graph.facebook.com/" + facebook_id + "/picture?type=large";
+
+                            // LOOP through retrieved JSON posts:
+                            for (int i = 0; i < posts.length(); i++)
+                            {
+                                JSONObject post = posts.optJSONObject(i);
+                                String likeId = post.optString("id");
+                                String likeCategory = post.optString("category");
+                                String likeName = post.optString("name");
+                                int likeCount = post.optInt("likes");
+
+                                // print id, page name and number of like of facebook page
+                                Log.e("id: ", likeId + " (name: " + likeName + " , category: "+ likeCategory + " likes count - " + likeCount);
+
+                                // Create Like Objects
+                                FBLike fbLike = new FBLike();
+                                fbLike.setId(likeId);
+                                fbLike.setCategory(likeCategory);
+                                fbLike.setName(likeName);
+
+                                // Add each like to a List
+                                fbLikes.add(fbLike);
+                            }
+
+                        } catch (JSONException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+        );
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,name, link"); //write the fields you need
+        request.setParameters(parameters);
+        request.executeAsync();
+        */
+
+        if (accessToken != null)
+        {
+            // Logged IN:
+            // Get profile elements:
+            Profile profile = Profile.getCurrentProfile();
+
+            String firstName = profile.getFirstName();
+            String lastName = profile.getLastName();
+            String imageUrl = profile.getProfilePictureUri(200, 200).toString();
+
+
+            Toast.makeText(getActivity().getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
+
+            // MAKE OTHER ELEMENTS VISIBLE AND SET VALUES:
+            mUserName.setText(firstName + " " + lastName);
+            mUserName.setVisibility(View.VISIBLE);
+
+            new DownloadImage(mProfilePicture).execute(imageUrl);
+            mProfilePicture.setVisibility(View.VISIBLE);
+        }
+        else {
+
+            mUserName.setVisibility(View.GONE);
+            mProfilePicture.setVisibility(View.GONE);
+
+        }
+
+    }
+
+    /*
+
+    private void deleteAccessToken()
+    {
+        accessTokenTracker = new AccessTokenTracker()
+        {
+            @Override
+            protected void onCurrentAccessTokenChanged(
+                    AccessToken oldAccessToken,
+                    AccessToken currentAccessToken)
+            {
+
+                if (currentAccessToken == null)
+                {
+                    //User logged out
+                    prefUtil.clearToken();
+                    LoginManager.getInstance().logOut();
+                }
+                else
+                {
+                    accessToken = currentAccessToken;
+                }
+            }
+        };
+    }
+    */
 
     public static LoginFragment newInstance()
     {
@@ -306,44 +519,4 @@ public class LoginFragment extends Fragment
         return new LoginFragment();
     }
 
-
-
-
-
-    private FacebookCallback<Sharer.Result> shareCallback = new FacebookCallback<Sharer.Result>() {
-        @Override
-        public void onCancel() {
-            Log.d("FacebookFragment", "Canceled");
-        }
-
-        @Override
-        public void onError(FacebookException error) {
-            Log.d("FacebookFragment", String.format("Error: %s", error.toString()));
-            String title ="ERROR";
-            String alertMessage = error.getMessage();
-            showResult(title, alertMessage);
-        }
-
-        @Override
-        public void onSuccess(Sharer.Result result) {
-            Log.d("FacebookFragment", "Success!");
-            if (result.getPostId() != null) {
-                String title = "SUCCESS";
-                String id = result.getPostId();
-                String alertMessage = "POSTED";
-                showResult(title, alertMessage);
-            }
-        }
-
-        private void showResult(String title, String alertMessage) {
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(title)
-                    .setMessage(alertMessage)
-                    .setPositiveButton("OK", null)
-                    .show();
-        }
-    };
-
-
 }
-
