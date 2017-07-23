@@ -56,6 +56,7 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
+import com.facebook.GraphRequestAsyncTask;
 import com.facebook.GraphResponse;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
@@ -70,6 +71,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -159,7 +161,7 @@ public class LoginFragment extends Fragment
                 {
                     this.stopTracking();
                     Profile.setCurrentProfile(newProfile);
-                    refreshUI();
+                    // refreshUI();
                 }
             }
         };
@@ -214,11 +216,7 @@ public class LoginFragment extends Fragment
             {
                 Toast.makeText(getActivity().getApplicationContext(), "Logging in...", Toast.LENGTH_SHORT).show();
                 accessToken = loginResult.getAccessToken();
-                // refreshUI();
-                // String accessTokenStr = loginResult.getAccessToken().getToken();
-
-                // save accessToken to SharedPreference
-                //prefUtil.saveAccessToken(accessTokenStr);
+                //new FBLoginTask().execute();
 
                 // accessToken = loginResult.getAccessToken();
                 GraphRequest request = GraphRequest.newMeRequest(
@@ -265,9 +263,16 @@ public class LoginFragment extends Fragment
                                         // Add each like to a List
                                         fbLikes.add(fbLike);
                                     }
-                                    */
+
 
                                     refreshUI();
+                                    */
+
+                                    mUserName.setText(name);
+                                    mUserName.setVisibility(View.VISIBLE);
+
+                                    new DownloadImage(mProfilePicture).execute(profile_pic_url);
+                                    mProfilePicture.setVisibility(View.VISIBLE);
 
                                 } catch (JSONException e)
                                 {
@@ -277,13 +282,15 @@ public class LoginFragment extends Fragment
                         }
                 );
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name, link"); //write the fields you need
+                parameters.putString("fields", "id, name, link"); //write the fields you need
                 request.setParameters(parameters);
                 request.executeAsync();
+
             }
 
             @Override
-            public void onCancel() {
+            public void onCancel()
+            {
             }
 
             @Override
@@ -301,6 +308,7 @@ public class LoginFragment extends Fragment
     public void onResume()
     {
         super.onResume();
+        Profile profile = Profile.getCurrentProfile();
         //deleteAccessToken();
 
     }
@@ -319,6 +327,8 @@ public class LoginFragment extends Fragment
         // Stop FB Login:
         accessTokenTracker.stopTracking();
         profileTracker.stopTracking();
+
+        refreshUI();
     }
 
     @Override
@@ -327,6 +337,8 @@ public class LoginFragment extends Fragment
         super.onDestroy();
         accessTokenTracker.stopTracking();
         profileTracker.stopTracking();
+
+        refreshUI();
     }
 
 
@@ -349,17 +361,26 @@ public class LoginFragment extends Fragment
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
-                    public void onSuccess(LoginResult loginResult) {
+                    public void onSuccess(LoginResult loginResult)
+                    {
 
+                        new FBLoginTask().execute();
+
+                        /*
                         System.out.println("Success");
                         GraphRequest.newMeRequest(
-                                loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                                loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback()
+                                {
                                     @Override
-                                    public void onCompleted(JSONObject json, GraphResponse response) {
-                                        if (response.getError() != null) {
+                                    public void onCompleted(JSONObject json, GraphResponse response)
+                                    {
+                                        if (response.getError() != null)
+                                        {
                                             // handle error
                                             System.out.println("ERROR");
-                                        } else {
+                                        }
+                                        else
+                                        {
                                             System.out.println("Success");
                                             try {
 
@@ -378,6 +399,7 @@ public class LoginFragment extends Fragment
                                     }
 
                                 }).executeAsync();
+                        */
 
                     }
 
@@ -391,69 +413,11 @@ public class LoginFragment extends Fragment
                 });
     }
 
+
+
+
     private void refreshUI()
     {
-        /*
-        if (accessToken != null)
-        {
-            GraphRequest request = GraphRequest.newMeRequest(
-                accessToken,
-                new GraphRequest.GraphJSONObjectCallback()
-                {
-                    @Override
-                    public void onCompleted(final JSONObject object, GraphResponse response)
-                    {
-                        // Application code
-                        final JSONObject jsonObject = response.getJSONObject();
-                        // convert Json object into Json array
-                        JSONArray posts;
-
-                        try
-                        {
-                            facebook_id = object.optString("id");
-                            name = jsonObject.getString("name");
-                            email =  jsonObject.getString("email");
-                            email_id = object.getString("email");
-                            gender = object.getString("gender");
-                            long fb_id = object.getLong("id"); // use this for logout
-                            posts = jsonObject.getJSONObject("likes").optJSONArray("data");
-                            profile_pic_url =  "https://graph.facebook.com/" + facebook_id + "/picture?type=large";
-
-                            // LOOP through retrieved JSON posts:
-                            for (int i = 0; i < posts.length(); i++)
-                            {
-                                JSONObject post = posts.optJSONObject(i);
-                                String likeId = post.optString("id");
-                                String likeCategory = post.optString("category");
-                                String likeName = post.optString("name");
-                                int likeCount = post.optInt("likes");
-
-                                // print id, page name and number of like of facebook page
-                                Log.e("id: ", likeId + " (name: " + likeName + " , category: "+ likeCategory + " likes count - " + likeCount);
-
-                                // Create Like Objects
-                                FBLike fbLike = new FBLike();
-                                fbLike.setId(likeId);
-                                fbLike.setCategory(likeCategory);
-                                fbLike.setName(likeName);
-
-                                // Add each like to a List
-                                fbLikes.add(fbLike);
-                            }
-
-                        } catch (JSONException e)
-                        {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-        );
-        Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,name, link"); //write the fields you need
-        request.setParameters(parameters);
-        request.executeAsync();
-        */
-
         if (accessToken != null)
         {
             // Logged IN:
@@ -474,41 +438,106 @@ public class LoginFragment extends Fragment
             new DownloadImage(mProfilePicture).execute(imageUrl);
             mProfilePicture.setVisibility(View.VISIBLE);
         }
-        else {
-
+        else
+        {
+            LoginManager.getInstance().logOut();
             mUserName.setVisibility(View.GONE);
             mProfilePicture.setVisibility(View.GONE);
+        }
+    }
 
+    private class FBLoginTask extends AsyncTask<Void, Void, Boolean>
+    {
+        @Override
+        protected Boolean doInBackground(Void... params)
+        {
+            try
+            {
+                GraphRequestAsyncTask request = GraphRequest.newMeRequest(
+                        accessToken,
+                        new GraphRequest.GraphJSONObjectCallback()
+                        {
+                            @Override
+                            public void onCompleted(final JSONObject object, GraphResponse response)
+                            {
+                                // Application code
+                                final JSONObject jsonObject = response.getJSONObject();
+                                // convert Json object into Json array
+                                JSONArray posts;
+
+                                try
+                                {
+                                    facebook_id = object.optString("id");
+                                    name = jsonObject.getString("name");
+                                    //email =  jsonObject.getString("email");
+                                    ///email_id = object.getString("email");
+                                    // gender = object.getString("gender");
+                                    //long fb_id = object.getLong("id"); // use this for logout
+                                    //posts = jsonObject.getJSONObject("likes").optJSONArray("data");
+                                    profile_pic_url = "https://graph.facebook.com/" + facebook_id + "/picture?type=large";
+
+                                    /* LOOP through retrieved JSON posts:
+                                    for (int i = 0; i < posts.length(); i++)
+                                    {
+                                        JSONObject post = posts.optJSONObject(i);
+                                        String likeId = post.optString("id");
+                                        String likeCategory = post.optString("category");
+                                        String likeName = post.optString("name");
+                                        int likeCount = post.optInt("likes");
+
+                                        // print id, page name and number of like of facebook page
+                                        Log.e("id: ", likeId + " (name: " + likeName + " , category: "+ likeCategory + " likes count - " + likeCount);
+
+                                        // Create Like Objects
+                                        FBLike fbLike = new FBLike();
+                                        fbLike.setId(likeId);
+                                        fbLike.setCategory(likeCategory);
+                                        fbLike.setName(likeName);
+
+                                        // Add each like to a List
+                                        fbLikes.add(fbLike);
+                                    }
+                                    */
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                ).executeAsync();
+                /*
+
+                Bundle parameters = new Bundle();
+                parameters.putString("fields", "id,name, link"); //write the fields you need
+                request.setParameters(parameters);
+                request.executeAsync();
+                */
+
+                return true;
+
+            } catch (Exception e) {
+                Log.e("FBLogin Failed", "Failed to login", e);
+            }
+
+            return true;
         }
 
-    }
-
-    /*
-
-    private void deleteAccessToken()
-    {
-        accessTokenTracker = new AccessTokenTracker()
+        @Override
+        protected void onPostExecute(Boolean loggedIn)
         {
-            @Override
-            protected void onCurrentAccessTokenChanged(
-                    AccessToken oldAccessToken,
-                    AccessToken currentAccessToken)
-            {
-
-                if (currentAccessToken == null)
-                {
-                    //User logged out
-                    prefUtil.clearToken();
-                    LoginManager.getInstance().logOut();
-                }
-                else
-                {
-                    accessToken = currentAccessToken;
-                }
+            if (loggedIn) {
+                refreshUI();
             }
-        };
+        }
     }
-    */
+
+    private void checkAccessToken()
+    {
+        if (accessToken == null)
+        {
+            LoginManager.getInstance().logOut();
+        }
+    }
 
     public static LoginFragment newInstance()
     {
