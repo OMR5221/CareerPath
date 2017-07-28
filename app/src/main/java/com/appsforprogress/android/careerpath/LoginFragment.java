@@ -127,6 +127,79 @@ public class LoginFragment extends Fragment
     private AccessToken accessToken;
     PrefUtil prefUtil;
 
+    FacebookCallback<LoginResult> facebookCallback = new FacebookCallback<LoginResult>() {
+
+        @Override
+        public void onSuccess(final LoginResult loginResult) {
+
+
+            GraphRequest request = GraphRequest.newMeRequest(
+                    loginResult.getAccessToken(),
+                    new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+
+                            if (BuildConfig.DEBUG) {
+                                FacebookSdk.setIsDebugEnabled(true);
+
+                                String uid = object.optString("id");
+                                String email = object.optString("email");
+                                String name = object.optString("name");
+
+                                Uri.Builder builder = new Uri.Builder();
+                                builder.scheme("https")
+                                        .authority("graph.facebook.com")
+                                        .appendPath(uid)
+                                        .appendPath("picture")
+                                        .appendQueryParameter("width", "1000")
+                                        .appendQueryParameter("height", "1000");
+
+                                Uri pictureUri = builder.build();
+
+                                try {
+                                    //sendLogin(uid, name, email, pictureUri.toString(), "fb");
+                                    mUserName.setText(name);
+                                    mUserName.setVisibility(View.VISIBLE);
+
+                                    new DownloadImage(mProfilePicture).execute(pictureUri.toString());
+                                    mProfilePicture.setVisibility(View.VISIBLE);
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                                // facebookLogout();
+
+                            }
+                        }
+                    });
+            Bundle parameters = new Bundle();
+            parameters.putString("fields", "id, name, email");
+            request.setParameters(parameters);
+            request.executeAsync();
+        }
+
+        @Override
+        public void onCancel() {
+        }
+
+        @Override
+        public void onError(FacebookException e) {
+            Toast.makeText(getActivity(), "Something went wrong, please try again later", Toast.LENGTH_LONG).show();
+        }
+    };
+
+    public void facebookLogout()
+    {
+        LoginManager.getInstance().logOut();
+    }
+
+    public void clearWidgets()
+    {
+        mUserName.setVisibility(View.GONE);
+        mProfilePicture.setVisibility(View.GONE);
+    }
+
 
 
     public LoginFragment() {}
@@ -147,8 +220,15 @@ public class LoginFragment extends Fragment
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldToken, AccessToken newToken)
             {
-                accessToken = newToken;
-                refreshUI();
+                if (newToken != null)
+                {
+                    accessToken = newToken;
+                    //refreshUI();
+                }
+                else if (newToken == null)
+                {
+                    facebookLogout();
+                }
             }
         };
 
@@ -159,9 +239,13 @@ public class LoginFragment extends Fragment
             {
                 if (newProfile != null)
                 {
-                    this.stopTracking();
+                    // this.stopTracking();
                     Profile.setCurrentProfile(newProfile);
                     // refreshUI();
+                }
+                else if (newProfile == null)
+                {
+                    clearWidgets();
                 }
             }
         };
@@ -209,7 +293,10 @@ public class LoginFragment extends Fragment
 
         callbackManager = CallbackManager.Factory.create();
         //mFBLoginButton.setFragment(this);
-        mFBLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>()
+        mFBLoginButton.registerCallback(callbackManager, facebookCallback);
+
+                /*
+                new FacebookCallback<LoginResult>()
         {
             @Override
             public void onSuccess(LoginResult loginResult)
@@ -267,6 +354,7 @@ public class LoginFragment extends Fragment
 
                                     refreshUI();
                                     */
+                /*
 
                                     mUserName.setText(name);
                                     mUserName.setVisibility(View.VISIBLE);
@@ -299,6 +387,7 @@ public class LoginFragment extends Fragment
                 // deleteAccessToken();
             }
         });
+        */
 
         return view;
     }
@@ -308,7 +397,7 @@ public class LoginFragment extends Fragment
     public void onResume()
     {
         super.onResume();
-        Profile profile = Profile.getCurrentProfile();
+        //  refreshUI();
         //deleteAccessToken();
 
     }
@@ -325,10 +414,10 @@ public class LoginFragment extends Fragment
         super.onStop();
 
         // Stop FB Login:
-        accessTokenTracker.stopTracking();
-        profileTracker.stopTracking();
+        //accessTokenTracker.stopTracking();
+        //profileTracker.stopTracking();
 
-        refreshUI();
+        // refreshUI();
     }
 
     @Override
@@ -337,8 +426,6 @@ public class LoginFragment extends Fragment
         super.onDestroy();
         accessTokenTracker.stopTracking();
         profileTracker.stopTracking();
-
-        refreshUI();
     }
 
 
@@ -418,11 +505,11 @@ public class LoginFragment extends Fragment
 
     private void refreshUI()
     {
-        if (accessToken != null)
+        Profile profile = Profile.getCurrentProfile();
+
+        if (accessToken != null && profile != null)
         {
             // Logged IN:
-            // Get profile elements:
-            Profile profile = Profile.getCurrentProfile();
 
             String firstName = profile.getFirstName();
             String lastName = profile.getLastName();
