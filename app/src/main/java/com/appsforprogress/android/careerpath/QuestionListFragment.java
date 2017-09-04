@@ -14,6 +14,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by ORamirez on 6/14/2017.
@@ -23,7 +24,22 @@ public class QuestionListFragment extends Fragment
 {
     private RecyclerView mQuestionListRecyclerView;
     private QuestionAdapter mQuestionAdapter;
-    private static final String TAG = "IPFragment";
+
+    private static final String TAG = "QLFragment";
+    private static final String ARG_USER_ID = "user_id";
+
+    // Handles call from List to create a new Fragment Instance:
+    public static QuestionListFragment newInstance(UUID questionId)
+    {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_USER_ID, questionId);
+
+        QuestionListFragment fragment = new QuestionListFragment();
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)

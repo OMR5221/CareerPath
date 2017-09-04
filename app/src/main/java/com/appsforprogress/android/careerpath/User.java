@@ -10,6 +10,7 @@ public class User
 {
     // Define the fields for Skill Model
     private UUID mUserId;
+    private Integer mFBUserId;
     private String mFirstName;
     private String mLastName;
     private Date mBirthDate;
@@ -17,6 +18,8 @@ public class User
     private String mEmail;
     private String mFaceBookID;
     private Date mSignUpDate;
+    // Determines what to show on UserProfile:
+    private Boolean mQuizCompleted;
 
     // Define constructor for the Skill Model
     public User()
@@ -37,9 +40,7 @@ public class User
         return mUserId;
     }
 
-    // Getter and setters
-
-
+    // Getter and setters:
     public String getFirstName() {
         return mFirstName;
     }
@@ -62,6 +63,15 @@ public class User
 
     public void setName(String name) {
         mName = name;
+    }
+
+    public Boolean getQuizCompleted()
+    {
+        return mQuizCompleted;
+    }
+
+    public void setQuizCompleted(Boolean quizCompleted) {
+        mQuizCompleted = quizCompleted;
     }
 
     public String getEmail() {
@@ -96,5 +106,14 @@ public class User
 
     public void setBirthDate(Date birthDate) {
         mBirthDate = birthDate;
+    }
+
+    // Facebook Id usage:
+    public Integer getFBUserId() {
+        return mFBUserId;
+    }
+
+    public void setFBUserId(Integer FBUserId) {
+        mFBUserId = FBUserId;
     }
 }

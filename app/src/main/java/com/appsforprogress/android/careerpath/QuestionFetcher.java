@@ -39,8 +39,8 @@ public class QuestionFetcher
         HttpURLConnection connection  = (HttpURLConnection) url.openConnection();
 
 
-        try {
-
+        try
+        {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             InputStream in = connection.getInputStream();
 

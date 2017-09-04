@@ -193,8 +193,6 @@ public class LoginFragment extends Fragment
 
                                     //shareDialog = new ShareDialog(getActivity());
 
-                                    setupAdapter();
-
                                 }
                                 catch (JSONException e)
                                 {
@@ -229,14 +227,6 @@ public class LoginFragment extends Fragment
         else if (newToken == null)
         {
             LoginManager.getInstance().logOut();
-        }
-    }
-
-    private void setupAdapter()
-    {
-        if (isAdded())
-        {
-            mFBLikeRecyclerView.setAdapter(new LoginFragment.FBLikeAdapter(fbLikes));
         }
     }
 
@@ -308,6 +298,8 @@ public class LoginFragment extends Fragment
         mUserName.setVisibility(View.INVISIBLE);
         mProfilePicture = (ImageView) view.findViewById(R.id.profileImage);
         mProfilePicture.setVisibility(View.INVISIBLE);
+        mUserName.setVisibility(View.GONE);
+        mProfilePicture.setVisibility(View.GONE);
 
         //mFBLikeRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_like_gallery_recycler_view);
         // Set up row of 3 elements
@@ -341,17 +333,22 @@ public class LoginFragment extends Fragment
             {
                 GraphRequest request = GraphRequest.newMeRequest(
                         loginResult.getAccessToken(),
-                        new GraphRequest.GraphJSONObjectCallback() {
+                        new GraphRequest.GraphJSONObjectCallback()
+                        {
                             @Override
                             public void onCompleted(JSONObject object, GraphResponse response)
                             {
                                 try
                                 {
+                                    Intent upIntent = UserProfileActivity.upIntent(getActivity(), object.toString());
+                                    // upIntent.putExtra("userProfile", object.toString());
+                                    startActivity(upIntent);
 
+                                    /*
                                     String uid = object.optString("id");
                                     String email = object.optString("email");
                                     String name = object.optString("name");
-                                    // JSONArray posts = object.getJSONObject("likes").optJSONArray("data");
+                                    //JSONArray likes = object.getJSONArray("user_likes");
 
                                     Uri.Builder builder = new Uri.Builder();
                                     builder.scheme("https")
@@ -364,9 +361,9 @@ public class LoginFragment extends Fragment
                                     Uri pictureUri = builder.build();
 
                                     /* LOOP through retrieved JSON posts:
-                                    for (int i = 0; i < posts.length(); i++)
+                                    for (int i = 0; i < likes.length(); i++)
                                     {
-                                        JSONObject post = posts.optJSONObject(i);
+                                        JSONObject post = likes.optJSONObject(i);
                                         String likeId = post.optString("id");
                                         String likeCategory = post.optString("category");
                                         String likeName = post.optString("name");
@@ -386,6 +383,7 @@ public class LoginFragment extends Fragment
                                     }
                                     */
 
+                                    /*
                                     //sendLogin(uid, name, email, pictureUri.toString(), "fb");
                                     mUserName.setText(name);
                                     mUserName.setVisibility(View.VISIBLE);
@@ -397,25 +395,22 @@ public class LoginFragment extends Fragment
                                     mFBLikeRecyclerView.setVisibility(View.VISIBLE);
 
                                     //shareDialog = new ShareDialog(getActivity());
-
-                                    setupAdapter();
+                                    */
 
                                 }
-                                catch (Exception e)
-                                {
+                                catch (Exception e) {
                                     e.printStackTrace();
                                 }
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id, name, email");
+                parameters.putString("fields", "id, name, email, picture.width(120).height(120)");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
 
             @Override
-            public void onCancel()
-            {
+            public void onCancel() {
             }
 
             @Override
@@ -476,8 +471,6 @@ public class LoginFragment extends Fragment
         callbackManager.onActivityResult(requestCode, responseCode, intent);
     }
 
-
-
     private void refreshUI()
     {
         Profile profile = Profile.getCurrentProfile();
@@ -485,7 +478,6 @@ public class LoginFragment extends Fragment
         if (accessToken != null && profile != null)
         {
             // Logged IN:
-
             String firstName = profile.getFirstName();
             String lastName = profile.getLastName();
             String imageUrl = profile.getProfilePictureUri(200, 200).toString();
@@ -524,99 +516,6 @@ public class LoginFragment extends Fragment
         }
     }
 
-    private class FBLoginTask extends AsyncTask<Void, Void, Boolean>
-    {
-        @Override
-        protected Boolean doInBackground(Void... params)
-        {
-            try
-            {
-                GraphRequestAsyncTask request = GraphRequest.newMeRequest(
-                        accessToken,
-                        new GraphRequest.GraphJSONObjectCallback()
-                        {
-                            @Override
-                            public void onCompleted(final JSONObject object, GraphResponse response)
-                            {
-                                // Application code
-                                final JSONObject jsonObject = response.getJSONObject();
-                                // convert Json object into Json array
-                                JSONArray posts;
-
-                                try
-                                {
-                                    facebook_id = object.optString("id");
-                                    name = jsonObject.getString("name");
-                                    //email =  jsonObject.getString("email");
-                                    ///email_id = object.getString("email");
-                                    // gender = object.getString("gender");
-                                    //long fb_id = object.getLong("id"); // use this for logout
-                                    //posts = jsonObject.getJSONObject("likes").optJSONArray("data");
-                                    profile_pic_url = "https://graph.facebook.com/" + facebook_id + "/picture?type=large";
-
-                                    /* LOOP through retrieved JSON posts:
-                                    for (int i = 0; i < posts.length(); i++)
-                                    {
-                                        JSONObject post = posts.optJSONObject(i);
-                                        String likeId = post.optString("id");
-                                        String likeCategory = post.optString("category");
-                                        String likeName = post.optString("name");
-                                        int likeCount = post.optInt("likes");
-
-                                        // print id, page name and number of like of facebook page
-                                        Log.e("id: ", likeId + " (name: " + likeName + " , category: "+ likeCategory + " likes count - " + likeCount);
-
-                                        // Create Like Objects
-                                        FBLike fbLike = new FBLike();
-                                        fbLike.setId(likeId);
-                                        fbLike.setCategory(likeCategory);
-                                        fbLike.setName(likeName);
-
-                                        // Add each like to a List
-                                        fbLikes.add(fbLike);
-                                    }
-                                    */
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                ).executeAsync();
-                /*
-
-                Bundle parameters = new Bundle();
-                parameters.putString("fields", "id,name, link"); //write the fields you need
-                request.setParameters(parameters);
-                request.executeAsync();
-                */
-
-                return true;
-
-            } catch (Exception e) {
-                Log.e("FBLogin Failed", "Failed to login", e);
-            }
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean loggedIn)
-        {
-            if (loggedIn) {
-                refreshUI();
-            }
-        }
-    }
-
-    private void checkAccessToken()
-    {
-        if (accessToken == null)
-        {
-            LoginManager.getInstance().logOut();
-        }
-    }
-
     public static LoginFragment newInstance()
     {
         // return new UserProfileFragment();
@@ -625,64 +524,4 @@ public class LoginFragment extends Fragment
 
         return new LoginFragment();
     }
-
-    /*
- * To get the Facebook page which is liked by user's through creating a new request.
- * When the request is completed, a callback is called to handle the success condition.
-*/
-
-    // Create object to hold each FBLike entry to be displayed in RecyclerView
-    private class FBLikeHolder extends RecyclerView.ViewHolder
-    {
-        private TextView mCategoryTextView;
-        private TextView mNameTextView;
-
-        public FBLikeHolder(View fbLikeView)
-        {
-            super(fbLikeView);
-
-            mCategoryTextView = (TextView) fbLikeView.findViewById(R.id.fragment_fblike_category);
-            mNameTextView = (TextView) fbLikeView.findViewById(R.id.fragment_fblike_name);
-        }
-
-        public void bindLikeItem(FBLike fbLikeItem)
-        {
-            mNameTextView.setText(fbLikeItem.getName().toString());
-            mCategoryTextView.setText(fbLikeItem.getCategory().toString());
-        }
-    }
-
-    // Create adapter to handle FBLike refreshing
-    private class FBLikeAdapter extends RecyclerView.Adapter<LoginFragment.FBLikeHolder>
-    {
-        private List<FBLike> mFBLikes;
-
-        public FBLikeAdapter(List<FBLike> fbLikes)
-        {
-            mFBLikes = fbLikes;
-        }
-
-        @Override
-        public LoginFragment.FBLikeHolder onCreateViewHolder(ViewGroup parent, int viewType)
-        {
-            LayoutInflater inflater = LayoutInflater.from(getActivity());
-            View fbLikeView = inflater.inflate(R.layout.fblike_item, parent, false);
-            return new LoginFragment.FBLikeHolder(fbLikeView);
-        }
-
-        // Bind the FBLike Object to the Holder managed by this Adapter
-        @Override
-        public void onBindViewHolder(LoginFragment.FBLikeHolder fbLikeHolder, int position)
-        {
-            FBLike fbLike = mFBLikes.get(position);
-            fbLikeHolder.bindLikeItem(fbLike);
-        }
-
-        @Override
-        public int getItemCount()
-        {
-            return mFBLikes.size();
-        }
-    }
-
 }

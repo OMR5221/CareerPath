@@ -1,6 +1,7 @@
 package com.appsforprogress.android.careerpath;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -53,7 +54,7 @@ public class UserProfileFragment extends Fragment
     private TextView mGender;
     private TextView mLocation;
     private ImageView mProfilePicture;
-    private FloatingActionButton postFab;
+    private FloatingActionButton quizFab;
     private RecyclerView mFBLikeRecyclerView;
 
 
@@ -81,6 +82,8 @@ public class UserProfileFragment extends Fragment
     private LoginButton loginButton;
     private CallbackManager mCallbackManager;
     private List<FBLike> mFBLikeItems = new ArrayList<>();
+    private JSONObject response, profile_pic_data, profile_pic_url;
+    private String userProfileData;
 
     public UserProfileFragment() {}
 
@@ -90,12 +93,17 @@ public class UserProfileFragment extends Fragment
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
 
+        userProfileData = getActivity().getIntent()
+                .getStringExtra(UserProfileActivity.EXTRA_USER_PROFILE);
+
+        /*
         mFirstName = (String) getActivity().getIntent()
                 .getSerializableExtra(UserProfileActivity.EXTRA_FIRST_NAME);
         mLastName = (String) getActivity().getIntent()
                 .getSerializableExtra(UserProfileActivity.EXTRA_LAST_NAME);
         mProfilePicURL = (String) getActivity().getIntent()
                 .getSerializableExtra(UserProfileActivity.EXTRA_IMAGE_LINK);
+         */
     }
 
 
@@ -105,26 +113,46 @@ public class UserProfileFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
 
         mUserName = (TextView) view.findViewById(R.id.fb_username);
-        mUserName.setText("" + mFirstName + " " + mLastName);
-        mUserName.setVisibility(View.VISIBLE);
-
+       //mUserName.setText("" + mFirstName + " " + mLastName);
         mProfilePicture = (ImageView) view.findViewById(R.id.profileImage);
-        new DownloadImage(mProfilePicture).execute(mProfilePicURL);
-        mProfilePicture.setVisibility(View.VISIBLE);
 
-        /*
-        postFab = (FloatingActionButton) view.findViewById(R.id.fab);
-        postFab.setOnClickListener(new View.OnClickListener()
+        try
+        {
+            response = new JSONObject(userProfileData);
+            // user_email.setText(response.get("email").toString());
+            mUserName.setText(response.get("name").toString());
+            mUserName.setVisibility(View.VISIBLE);
+
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme("https")
+                    .authority("graph.facebook.com")
+                    .appendPath(response.get("id").toString())
+                    .appendPath("picture")
+                    .appendQueryParameter("width", "1000")
+                    .appendQueryParameter("height", "1000");
+
+            Uri pictureUri = builder.build();
+
+            profile_pic_data = new JSONObject(response.get("picture").toString());
+            profile_pic_url = new JSONObject(profile_pic_data.getString("data"));
+            new DownloadImage(mProfilePicture).execute(pictureUri.toString());
+            mProfilePicture.setVisibility(View.VISIBLE);
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+        quizFab = (FloatingActionButton) view.findViewById(R.id.quiz_fab);
+        quizFab.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                ShareLinkContent content = new ShareLinkContent.Builder().build();
-                shareDialog.show(content);
+                // ShareLinkContent content = new ShareLinkContent.Builder().build();
+                // shareDialog.show(content);
             }
         });
-        postFab.setVisibility(View.INVISIBLE);
-        */
+        quizFab.setVisibility(View.INVISIBLE);
 
         mFBLikeRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_like_gallery_recycler_view);
         // Set up row of 3 elements

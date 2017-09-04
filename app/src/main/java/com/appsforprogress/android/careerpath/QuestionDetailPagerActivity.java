@@ -35,7 +35,7 @@ public class QuestionDetailPagerActivity extends FragmentActivity
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState)
+    protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question_detail_pager);
@@ -63,7 +63,6 @@ public class QuestionDetailPagerActivity extends FragmentActivity
                 return mQuestions.size();
             }
         });
-
 
         for (int i = 0; i < mQuestions.size(); i++)
         {
