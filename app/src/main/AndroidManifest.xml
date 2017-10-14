@@ -26,8 +26,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".UserProfileActivity"
-            android:label="@string/title_activity_user_profile"
+            android:name=".HomeActivity"
+            android:label="@string/title_activity_home"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity

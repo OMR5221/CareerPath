@@ -64,13 +64,13 @@ public class UserProfileFragment extends Fragment
     public static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
     public static final String EXTRA_LOGIN_RESULT = "com.appsforprogress.android.mycareerpath.login_result";
 
-    public static UserProfileFragment newInstance(String firstName, String lastName, String profileImg)
+    public static UserProfileFragment newInstance()
     {
         Bundle args = new Bundle();
 
-        args.putSerializable(EXTRA_FIRST_NAME, firstName);
-        args.putSerializable(EXTRA_LAST_NAME, lastName);
-        args.putSerializable(EXTRA_IMAGE_LINK, profileImg);
+        // args.putSerializable(EXTRA_FIRST_NAME, firstName);
+        // args.putSerializable(EXTRA_LAST_NAME, lastName);
+        // args.putSerializable(EXTRA_IMAGE_LINK, profileImg);
 
         UserProfileFragment fragment = new UserProfileFragment();
         fragment.setArguments(args);
@@ -94,7 +94,7 @@ public class UserProfileFragment extends Fragment
         setRetainInstance(true);
 
         userProfileData = getActivity().getIntent()
-                .getStringExtra(UserProfileActivity.EXTRA_USER_PROFILE);
+                .getStringExtra(HomeActivity.EXTRA_USER_PROFILE);
 
         /*
         mFirstName = (String) getActivity().getIntent()
@@ -113,7 +113,7 @@ public class UserProfileFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_user_profile, container, false);
 
         mUserName = (TextView) view.findViewById(R.id.fb_username);
-       //mUserName.setText("" + mFirstName + " " + mLastName);
+        //mUserName.setText("" + mFirstName + " " + mLastName);
         mProfilePicture = (ImageView) view.findViewById(R.id.profileImage);
 
         try
