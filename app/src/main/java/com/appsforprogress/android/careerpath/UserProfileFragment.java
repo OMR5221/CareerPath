@@ -138,6 +138,32 @@ public class UserProfileFragment extends Fragment
             new DownloadImage(mProfilePicture).execute(pictureUri.toString());
             mProfilePicture.setVisibility(View.VISIBLE);
 
+            // convert Json object into Json array
+            JSONArray likes = response.getJSONObject("likes").optJSONArray("data");
+
+            // LOOP through retrieved JSON posts:
+            for (int i = 0; i < likes.length(); i++)
+            {
+                JSONObject like = likes.optJSONObject(i);
+
+                String id = like.optString("id");
+                //String category = post.optString("category");
+                String name = like.optString("name");
+
+                int count = like.optInt("likes");
+                // print id, page name and number of like of facebook page
+                // Log.e("id: ", id + " (name: " + name + " , category: "+ category + " likes count - " + count);
+
+                FBLike fbLike = new FBLike();
+                fbLike.setId(id);
+                // fbLike.setCategory(category);
+                fbLike.setName(name);
+
+                // Add each like to a List
+                mFBLikeItems.add(fbLike);
+            }
+
+
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -202,21 +228,21 @@ public class UserProfileFragment extends Fragment
     // Create object to hold each FBLike entry to be displayed in RecyclerView
     private class FBLikeHolder extends RecyclerView.ViewHolder
     {
-        private TextView mCategoryTextView;
+        // private TextView mCategoryTextView;
         private TextView mNameTextView;
 
         public FBLikeHolder(View fbLikeView)
         {
             super(fbLikeView);
 
-            mCategoryTextView = (TextView) fbLikeView.findViewById(R.id.fragment_fblike_category);
+            // mCategoryTextView = (TextView) fbLikeView.findViewById(R.id.fragment_fblike_category);
             mNameTextView = (TextView) fbLikeView.findViewById(R.id.fragment_fblike_name);
         }
 
         public void bindLikeItem(FBLike fbLikeItem)
         {
             mNameTextView.setText(fbLikeItem.getName().toString());
-            mCategoryTextView.setText(fbLikeItem.getCategory().toString());
+            // mCategoryTextView.setText(fbLikeItem.getCategory().toString());
         }
     }
 

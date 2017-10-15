@@ -362,7 +362,7 @@ public class LoginFragment extends Fragment
                             }
                         });
                 Bundle parameters = new Bundle();
-                parameters.putString("fields", "id, name, email, picture.width(120).height(120)");
+                parameters.putString("fields", "id, name, email, picture.width(120).height(120), likes");
                 request.setParameters(parameters);
                 request.executeAsync();
             }
