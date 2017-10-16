@@ -5,13 +5,14 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 /**
  * Created by Oswald on 3/12/2016.
  */
 
 // We will define the tabs displayed for the user when they select the Attributes Menu
-public class HomeTabPagerAdapter extends FragmentPagerAdapter
+public class HomeTabPagerAdapter extends FragmentStatePagerAdapter
 {
     public enum HomeTab
     {

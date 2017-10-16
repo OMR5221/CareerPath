@@ -43,6 +43,12 @@ import java.util.List;
  */
 public class UserProfileFragment extends Fragment
 {
+    public static final String EXTRA_USER_ID = "com.appsforprogress.android.mycareerpath.user_id";
+    public static final String EXTRA_FIRST_NAME = "com.appsforprogress.android.mycareerpath.first_name";
+    public static final String EXTRA_LAST_NAME = "com.appsforprogress.android.mycareerpath.last_name";
+    public static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
+    public static final String EXTRA_LOGIN_RESULT = "com.appsforprogress.android.mycareerpath.login_result";
+
     private ShareDialog shareDialog;
     private User mUser;
     private String mFirstName;
@@ -56,13 +62,15 @@ public class UserProfileFragment extends Fragment
     private ImageView mProfilePicture;
     private FloatingActionButton quizFab;
     private RecyclerView mFBLikeRecyclerView;
+    private ProfileTracker profileTracker;
+    private AccessTokenTracker accessTokenTracker;
+    private LoginButton loginButton;
+    private CallbackManager mCallbackManager;
+    private List<FBLike> mFBLikeItems = new ArrayList<>();
+    private JSONObject response, profile_pic_data, profile_pic_url;
+    private String userProfileData;
+    private FBLikeAdapter mFBLikeAdapter;
 
-
-    public static final String EXTRA_USER_ID = "com.appsforprogress.android.mycareerpath.user_id";
-    public static final String EXTRA_FIRST_NAME = "com.appsforprogress.android.mycareerpath.first_name";
-    public static final String EXTRA_LAST_NAME = "com.appsforprogress.android.mycareerpath.last_name";
-    public static final String EXTRA_IMAGE_LINK = "com.appsforprogress.android.mycareerpath.profile_image";
-    public static final String EXTRA_LOGIN_RESULT = "com.appsforprogress.android.mycareerpath.login_result";
 
     public static UserProfileFragment newInstance()
     {
@@ -76,14 +84,6 @@ public class UserProfileFragment extends Fragment
         fragment.setArguments(args);
         return fragment;
     }
-
-    private ProfileTracker profileTracker;
-    private AccessTokenTracker accessTokenTracker;
-    private LoginButton loginButton;
-    private CallbackManager mCallbackManager;
-    private List<FBLike> mFBLikeItems = new ArrayList<>();
-    private JSONObject response, profile_pic_data, profile_pic_url;
-    private String userProfileData;
 
     public UserProfileFragment() {}
 
@@ -187,7 +187,9 @@ public class UserProfileFragment extends Fragment
 
         //shareDialog = new ShareDialog(getActivity());
 
-        setupAdapter();
+        // setupAdapter();
+
+        updateUI();
 
         return view;
     }
@@ -201,11 +203,32 @@ public class UserProfileFragment extends Fragment
         }
     }
 
+    // Get likes stored in a DB:
+    private void updateUI()
+    {
+        //UserLikes ul = UserLikes.get(getActivity());
+        //List<Like> likes = ul.getLikes();
+
+        if (mFBLikeAdapter == null)
+        {
+            mFBLikeAdapter = new FBLikeAdapter(mFBLikeItems);
+            mFBLikeRecyclerView.setAdapter(mFBLikeAdapter);
+        }
+        else {
+            if (!isAdded())
+            {
+                mFBLikeRecyclerView.setAdapter(new FBLikeAdapter(mFBLikeItems));
+            }
+        }
+
+    }
+
 
     @Override
     public void onResume()
     {
         super.onResume();
+        updateUI();
     }
 
     @Override
