@@ -1,5 +1,7 @@
 package com.appsforprogress.android.careerpath;
 
+import java.net.URL;
+
 /**
  * Created by ORamirez on 7/4/2016.
  */
@@ -8,6 +10,7 @@ public class FBLike
     private String mId;
     private String mCategory;
     private String mName;
+    private URL mPicURL;
 
     public String getId() {
         return mId;
@@ -31,5 +34,13 @@ public class FBLike
 
     public void setCategory(String category) {
         mCategory = category;
+    }
+
+    public URL getPicURL() {
+        return mPicURL;
+    }
+
+    public void setPicURL(URL picURL) {
+        mPicURL = picURL;
     }
 }

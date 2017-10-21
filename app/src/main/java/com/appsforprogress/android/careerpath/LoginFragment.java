@@ -417,8 +417,9 @@ public class LoginFragment extends Fragment
     public void onDestroy()
     {
         super.onDestroy();
+        LoginManager.getInstance().logOut();
         //accessTokenTracker.stopTracking();
-        // profileTracker.stopTracking();
+        //profileTracker.stopTracking();
     }
 
 

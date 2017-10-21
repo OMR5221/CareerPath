@@ -1,6 +1,8 @@
 package com.appsforprogress.android.careerpath;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -34,6 +36,8 @@ import com.facebook.share.widget.ShareDialog;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -159,10 +163,13 @@ public class UserProfileFragment extends Fragment
                 // fbLike.setCategory(category);
                 fbLike.setName(name);
 
+                URL imageURL = new URL("https://graph.facebook.com/" + id + "/picture?type=large");
+                // Bitmap bitmap = BitmapFactory.decodeStream(imageURL.openConnection().getInputStream());
+                fbLike.setPicURL(imageURL);
+
                 // Add each like to a List
                 mFBLikeItems.add(fbLike);
             }
-
 
         } catch(Exception e){
             e.printStackTrace();
@@ -252,19 +259,22 @@ public class UserProfileFragment extends Fragment
     private class FBLikeHolder extends RecyclerView.ViewHolder
     {
         // private TextView mCategoryTextView;
-        private TextView mNameTextView;
+        private TextView mLikeName;
+        private ImageView mLikePic;
 
         public FBLikeHolder(View fbLikeView)
         {
             super(fbLikeView);
 
             // mCategoryTextView = (TextView) fbLikeView.findViewById(R.id.fragment_fblike_category);
-            mNameTextView = (TextView) fbLikeView.findViewById(R.id.fragment_fblike_name);
+            mLikeName = (TextView) fbLikeView.findViewById(R.id.fblike_name);
+            mLikePic = (ImageView) fbLikeView.findViewById(R.id.fblike_image);
         }
 
         public void bindLikeItem(FBLike fbLikeItem)
         {
-            mNameTextView.setText(fbLikeItem.getName().toString());
+            mLikeName.setText(fbLikeItem.getName().toString());
+            new DownloadImage(mLikePic).execute(fbLikeItem.getPicURL().toString());
             // mCategoryTextView.setText(fbLikeItem.getCategory().toString());
         }
     }
